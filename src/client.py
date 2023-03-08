@@ -3,11 +3,12 @@ import imghdr
 import requests
 
 class ClientAPI:
-	def __init__(self, ip: str, timer: int, image_folder: str) -> None:
+	def __init__(self, ip: str, timer: int, image_folder: str, save_as: str = "image") -> None:
 		self.HOST = ip
 		self.SLEEP_TIME = timer # Sets how often will client try to access server
 
 		self.image_folder = image_folder
+		self.save_as = save_as
 		if not os.path.exists(self.image_folder):
 			os.mkdir(self.image_folder)
 		try:
@@ -24,12 +25,12 @@ class ClientAPI:
 		except IndexError:
 			pass
 
-	def write_to_file(self, file_type, response):
+	def __save_image(self, response):
 		'''Creating image file'''
-		with open(os.path.join(self.image_folder, f"1.{file_type}"), "wb") as file:
+		with open(os.path.join(self.image_folder, self.IMAGE_NAME), "wb") as file:
 				file.write(response.content)
 
-	def download_image(self, save_as: str = "image"):
+	def download_image(self):
 		try:
 			# Getting json that contains url to image
 			response = requests.get(self.HOST)
@@ -40,8 +41,8 @@ class ClientAPI:
 
 			# Getting the file type of the image using imghdr
 			file_type = imghdr.what(None, response.content)
-			self.write_to_file(file_type=file_type, response=response)
-			self.IMAGE_NAME = f"{save_as}.{file_type}"
+			self.IMAGE_NAME = f"{self.save_as}.{file_type}"
+			self.__save_image(response)
 
 		except requests.exceptions.ConnectTimeout:
 			# Retries to connect to the api, if it couldn't

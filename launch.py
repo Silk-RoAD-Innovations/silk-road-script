@@ -6,7 +6,7 @@ from src import wallpaper
 
 def mainloop():
     api = client.ClientAPI("http://127.0.0.1:5000/json", 5, "wallpaper")
-    # json should look like:
+    # json should look like this:
     # 	{"url": "http://127.0.0.1:5000/static/logo.png"}
 
     while True:
