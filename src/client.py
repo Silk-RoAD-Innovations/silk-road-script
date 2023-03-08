@@ -3,7 +3,7 @@ import imghdr
 import requests
 
 class ClientAPI:
-	def __init__(self, ip: str, timer: int, image_folder: str, save_as: str = "image") -> None:
+	def __init__(self, ip: str, timer: int, image_folder: str = "image_folder", save_as: str = "image") -> None:
 		'''Class for interacting with main server'''
 		self.HOST = ip
 		self.SLEEP_TIME = timer # Sets how often will client try to access server
@@ -45,6 +45,6 @@ class ClientAPI:
 			self.IMAGE_NAME = f"{self.save_as}.{file_type}"
 			self.__save_image(response)
 
-		except requests.exceptions.ConnectTimeout:
+		except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
 			# Retries to connect to the api, if it couldn't
 			self.download_image()
