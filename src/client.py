@@ -1,0 +1,48 @@
+import os
+import imghdr
+import requests
+
+class ClientAPI:
+	def __init__(self, ip: str, timer: int, image_folder: str) -> None:
+		self.HOST = ip
+		self.SLEEP_TIME = timer # Sets how often will client try to access server
+
+		self.image_folder = image_folder
+		if not os.path.exists(self.image_folder):
+			os.mkdir(self.image_folder)
+		try:
+			self.IMAGE_NAME = os.listdir(self.IMAGE_NAME)[0]
+		except:
+			self.IMAGE_NAME = ""
+
+	def delete_image(self):
+		'''Deleting previous image in image_folder'''
+		try:
+			os.remove(os.path.join(self.image_folder, os.listdir(self.image_folder)[0]))
+		
+		# If image doesn't exists
+		except IndexError:
+			pass
+
+	def write_to_file(self, file_type, response):
+		'''Creating image file'''
+		with open(os.path.join(self.image_folder, f"1.{file_type}"), "wb") as file:
+				file.write(response.content)
+
+	def download_image(self, save_as: str = "image"):
+		try:
+			# Getting json that contains url to image
+			response = requests.get(self.HOST)
+			image_url = response.json()["url"]
+
+			# Downloading image from json's url
+			response = requests.get(image_url)
+
+			# Getting the file type of the image using imghdr
+			file_type = imghdr.what(None, response.content)
+			self.write_to_file(file_type=file_type, response=response)
+			self.IMAGE_NAME = f"{save_as}.{file_type}"
+
+		except requests.exceptions.ConnectTimeout:
+			# Retries to connect to the api, if it couldn't
+			self.download_image()
