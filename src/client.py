@@ -4,6 +4,7 @@ import requests
 
 class ClientAPI:
 	def __init__(self, ip: str, timer: int, image_folder: str, save_as: str = "image") -> None:
+		'''Class for interacting with main server'''
 		self.HOST = ip
 		self.SLEEP_TIME = timer # Sets how often will client try to access server
 

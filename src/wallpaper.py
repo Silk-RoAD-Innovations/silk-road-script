@@ -8,6 +8,7 @@ if sys.platform == "win32":
 	import win32gui
 
 class Wallpaper:
+	'''Interact with wallpaper'''
 
 	@staticmethod
 	def set_wallpaper(path):
