@@ -48,19 +48,23 @@ jobs:
           name: myapp
 
       - name: Create draft release
+        id: create_release
         run: |
-          echo ::set-env name=DRAFT_RELEASE_ID::$(curl \
-            -s \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            --data '{"tag_name":"v'${{ github.ref }}'","name":"Release '${{ github.ref }}'","draft":true}' \
-            "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r .id)
+          response=$(curl -s -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases \
+          -d '{"tag_name": "'"${{ github.ref }}"'", "name": "'"Release ${{ github.ref }} Draft"'", "draft": true}')
+          release_id=$(echo "$response" | jq '.id')
+          echo "::set-env name=DRAFT_RELEASE_ID::$release_id"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_URL: ${{ steps.create_release.outputs.html_url }}
 
       - name: Upload executables
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.DRAFT_RELEASE_ID }}/assets?name=myapp-${{ matrix.os }}"
+          upload_url: ${{ env.RELEASE_URL }}/assets?name=myapp-${{ matrix.os }}
           asset_path: myapp/myapp
           asset_name: myapp-${{ matrix.os }}
           asset_content_type: application/octet-stream
