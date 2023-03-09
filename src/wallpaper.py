@@ -11,7 +11,7 @@ class Wallpaper:
 	'''Interact with wallpaper'''
 
 	@staticmethod
-	def set_wallpaper(path):
+	def set_wallpaper(path: str) -> None:
 		if sys.platform == "win32":
 			key = win32api.RegOpenKeyEx(win32con.HKEY_CURRENT_USER, "Control Panel\\Desktop", 0, win32con.KEY_SET_VALUE)
 

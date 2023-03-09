@@ -2,9 +2,26 @@ import time
 import os
 
 import argparse
+import requests
 
 from src import client
 from src import wallpaper
+
+def mainloop(api: client.ClientAPI):
+    '''Function to call to ClientAPI every X seconds, and set downloaded image as wallpaper'''
+    def download_image_retry():
+        '''Retries to connect to the api after SLEEP_TIME, if it couldn't'''
+        try:
+            api.download_image()
+        except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError):
+            time.sleep(api.SLEEP_TIME)
+            download_image_retry()
+
+    while True:
+        time.sleep(api.SLEEP_TIME)
+        api.delete_image()        
+        download_image_retry()
+        wallpaper.Wallpaper.set_wallpaper(os.path.abspath(os.path.join(api.image_folder, api.IMAGE_NAME)))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ClientAPI Arguments')
@@ -16,9 +33,4 @@ if __name__ == '__main__':
 
     # Create an instance of ClientAPI using the parsed arguments
     api = client.ClientAPI(args.ip, args.timer, args.image_folder, args.save_as)
-
-    while True:
-        time.sleep(api.SLEEP_TIME)
-        api.delete_image()
-        api.download_image()
-        wallpaper.Wallpaper.set_wallpaper(os.path.abspath(os.path.join(api.image_folder, api.IMAGE_NAME)))
+    mainloop(api)
