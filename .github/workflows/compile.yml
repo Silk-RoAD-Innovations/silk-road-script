@@ -61,10 +61,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload executables
-        uses: github/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1
         with:
-          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.draft_release.outputs.draft_release_id }}/assets?name=myapp-${{ matrix.os }}"
+          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.DRAFT_RELEASE_ID }}/assets?name=myapp-${{ matrix.os }}"
           asset_path: myapp/myapp
           asset_name: myapp-${{ matrix.os }}
           asset_content_type: application/octet-stream
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
