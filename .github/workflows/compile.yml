@@ -36,6 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      matrix:
+        os: [macOS, Windows, Linux]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2
@@ -64,8 +67,3 @@ jobs:
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          matrix:
-            os: [macOS, Windows, Linux]
-            macOS: "macos-latest"
-            Windows: "windows-latest"
-            Linux: "ubuntu-latest"
