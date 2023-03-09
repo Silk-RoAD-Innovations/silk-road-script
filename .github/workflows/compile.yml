@@ -19,13 +19,14 @@ jobs:
 
       - name: Run platform-specific installation script
         run: |
-          if "%OS%" == "Windows_NT" (
-            rem Windows
+          if [ "${OS}" = "Windows_NT" ]; then
+            # Windows
             pip install -r requirements.txt -r requirements-windows.txt
-          ) else (
-            rem Mac OS X or Linux
+          else
+            # Mac OS X or Linux
             pip install -r requirements.txt
-          )
+          fi
+
 
       - name: Build executables
         run: |
