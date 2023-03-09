@@ -17,8 +17,22 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Run platform-specific installation script
+        run: |
+          if [ "$(uname)" == "Darwin" ]; then
+              # Mac OS X
+              pip install -r requirements.txt
+          elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+              # Linux
+              pip install -r requirements.txt
+          elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+              # Windows 32-bit
+              pip install -r requirements.txt -r requirements-windows.txt
+          elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+              # Windows 64-bit
+              pip install -r requirements.txt -r requirements-windows.txt
+          fi
+
 
       - name: Build executables
         run: |
