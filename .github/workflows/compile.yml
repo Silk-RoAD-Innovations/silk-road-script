@@ -17,17 +17,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run platform-specific installation script
-        run: |
-          if expr "${OSTYPE}" : ".*win.*" > /dev/null; then
-            # Windows
-            pip install -r requirements.txt -r requirements-windows.txt
-          else
-            # Mac OS X or Linux
-            pip install -r requirements.txt
-          fi
+      - name: Install packages for Windows
+        if: runner.os == 'Windows'
+        run: pip install -r requirements-windows.txt -r requirements.txt
 
-
+      - name: Install packages for Mac/Linux
+        if: runner.os != 'Windows'
+        run: pip install -r requirements.txt
 
       - name: Build executables
         run: |
