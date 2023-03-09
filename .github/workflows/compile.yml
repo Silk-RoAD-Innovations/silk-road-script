@@ -35,14 +35,33 @@ jobs:
         with:
           name: myapp
           path: myapp
+
   draft_release:
     needs: build
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Create Draft Release
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create draft release
+        id: create_draft_release
         uses: actions/create-release@v1
         with:
-          tag_name: v1.0.0
-          name: Release v1.0.0
+          tag_name: v0.1.0
           draft: true
-          prerelease: false
+          name: My App v0.1.0
+          body: |
+            This is a draft release for version 0.1.0 of My App.
+            Please review and provide feedback.
+          commitish: ${{ github.sha }}
+
+      - name: Upload artifacts to draft release
+        uses: actions/upload-artifact@v2
+        with:
+          name: myapp
+          path: myapp
+
+      - name: Set output variable
+        run: echo ::set-output name=draft_release_id::${{ steps.create_draft_release.outputs.id }}
