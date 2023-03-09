@@ -4,11 +4,6 @@ on: push
 
 jobs:
   createrelease:
-    permissions:
-      id-token: write
-      contents: read
-      issues: write
-      pull-requests: write
     name: Create Release
     runs-on: [ubuntu-latest]
     steps:
