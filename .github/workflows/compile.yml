@@ -19,7 +19,7 @@ jobs:
 
       - name: Run platform-specific installation script
         run: |
-          if [[ $(uname) == "Windows"* ]]; then
+          if expr "${OSTYPE}" : ".*win.*" > /dev/null; then
             # Windows
             pip install -r requirements.txt -r requirements-windows.txt
           else
