@@ -38,35 +38,11 @@ jobs:
   draft_release:
     needs: build
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    outputs:
-      draft_release_id: ${{ steps.create_draft_release.outputs.draft_release_id }}
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
+      - name: Create Draft Release
+        uses: actions/create-release@v1
         with:
-          name: myapp
-
-      - name: Create draft release
-        id: create_draft_release
-        run: |
-          draft_release_id=$(curl \
-            -s \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            --data '{"tag_name":"v'${{ github.ref }}'","name":"Release '${{ github.ref }}'","draft":true}' \
-            "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r .id)
-          echo "::set-output name=draft_release_id::$draft_release_id"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload executables
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.DRAFT_RELEASE_ID }}/assets?name=myapp-${{ matrix.os }}"
-          asset_path: myapp/myapp
-          asset_name: myapp-${{ matrix.os }}
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          tag_name: v1.0.0
+          name: Release v1.0.0
+          draft: true
+          prerelease: false
