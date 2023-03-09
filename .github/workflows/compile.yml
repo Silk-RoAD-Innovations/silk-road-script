@@ -5,10 +5,16 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: read
+  actions: write
+  checks: write
+  contents: write
+  deployments: write
+  issues: write
   packages: write
   pull-requests: write
-  repository: 'public'
+  repository-projects: write
+  security-events: none
+  statuses: write
 
 jobs:
   createrelease:
