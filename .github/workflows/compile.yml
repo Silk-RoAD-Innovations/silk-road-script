@@ -1,67 +1,88 @@
-name: Build and Draft Release
+name: build
 
-on:
-  push:
+on: push
 
 jobs:
+  createrelease:
+    name: Create Release
+    runs-on: [ubuntu-latest]
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release${{ github.run_number }}
+        release_name: Build ${{ github.run_number }}
+        body: |
+             Commit ${{ github.sha }} 
+             ${{ github.event.commits[0].message }}
+        draft: true
+        prerelease: false
+    - name: Output Release URL File
+      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+    - name: Save Release URL File for publish
+      uses: actions/upload-artifact@v1
+      with:
+        name: release_url
+        path: release_url.txt
+
   build:
+    name: Build packages
+    needs: createrelease
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            TARGET: macos
+            CMD_BUILD: pyinstaller launch.py --name myapp --icon logo.ico
+            OUT_FILE_NAME: script-macos
+            ASSET_MIME: application/octet-stream
+          - os: windows-latest
+            TARGET: windows
+            CMD_BUILD: pyinstaller launch.py --name myapp --icon logo.ico
+            OUT_FILE_NAME: script-windows.exe
+            ASSET_MIME: application/vnd.microsoft.portable-executable
+          - os: ubuntu-latest
+            TARGET: x86_64-linux-gnu
+            CMD_BUILD: pyinstaller launch.py --name myapp --icon logo.ico
+            OUT_FILE_NAME: script-linux
+            ASSET_MIME: application/octet-stream
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+    - name: Install packages for Windows
+      if: runner.os == 'Windows'
+      run: pip install -r requirements-windows.txt -r requirements.txt
+    - name: Install packages for Mac/Linux
+      if: runner.os != 'Windows'
+      run: pip install -r requirements.txt
 
-      - name: Install packages for Windows
-        if: runner.os == 'Windows'
-        run: pip install -r requirements-windows.txt -r requirements.txt
-
-      - name: Install packages for Mac/Linux
-        if: runner.os != 'Windows'
-        run: pip install -r requirements.txt
-
-      - name: Build executables
-        run: |
-          pyinstaller launch.py --name myapp --icon logo.ico
-          mv dist myapp
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: myapp
-          path: myapp
-
-  draft_release:
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Create draft release
-        id: create_draft_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v0.1.0
-          draft: true
-          name: My App v0.1.0
-          body: |
-            This is a draft release for version 0.1.0 of My App.
-            Please review and provide feedback.
-          commitish: ${{ github.sha }}
-
-      - name: Upload artifacts to draft release
-        uses: actions/upload-artifact@v2
-        with:
-          name: myapp
-          path: myapp
-
-      - name: Set output variable
-        run: echo ::set-output name=draft_release_id::${{ steps.create_draft_release.outputs.id }}
+    - name: Build with pyinstaller for ${{ matrix.TARGET }}
+      run: ${{ matrix.CMD_BUILD }}
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
+      with:
+        name: release_url
+    - name: Get Release File Name & Upload URL
+      id: get_release_info
+      shell: bash
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo ::set-output name=upload_url::$value
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ./dist/${{ matrix.OUT_FILE_NAME }}
+        asset_name: ${{ matrix.OUT_FILE_NAME }}
+        asset_content_type: ${{ matrix.ASSET_MIME }}
