@@ -1,3 +1,4 @@
 requests
 argparse
 nuitka
+ordered-set # for best Python compile time performance.
