@@ -5,7 +5,7 @@ import argparse
 import requests
 
 from src import client
-from src import wallpaper
+from scripts import wallpaper
 
 def mainloop(api: client.ClientAPI):
     '''Function to call to ClientAPI every X seconds, and set downloaded image as wallpaper'''
