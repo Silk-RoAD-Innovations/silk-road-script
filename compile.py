@@ -52,3 +52,11 @@ def compile_mac_os():
     output_path = os.path.abspath("dist/macos/myapp")
     command = f"python -m nuitka --standalone --output-file={output_path} --plugin-enable=qt-plugins --plugin-enable=sqlite-extensions --follow-imports launch.py"
     os.system(command)
+
+if __name__ == "__main__":
+    if sys.platform == "win32":
+        compile_windows()
+    elif "darwin" in sys.platform:
+        compile_mac_os()
+    elif "linux" in sys.platform:
+        compile_linux()
