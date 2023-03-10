@@ -58,7 +58,7 @@ class NuitkaCompiler:
                 "--follow-imports",
                 "--onefile",
                 f"--output-file={self.output_filename}",
-                f"--windows-icon-from-ico={self.icon}",
+                f"--windows-icon-from-ico={os.path.abspath(self.icon)}",
                 "--output-dir=dist",
                 self.main_script])
         else:
@@ -69,3 +69,6 @@ class NuitkaCompiler:
                 f"--output-file={self.output_filename}",
                 "--output-dir=dist",
                 self.main_script])
+if __name__ == "__main__":
+    c = NuitkaCompiler("windows", "launch.py", "logo.ico")
+    c.compile()
