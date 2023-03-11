@@ -14,9 +14,12 @@ class NuitkaCompiler:
         if target_platform == "windows":
             self.requirements = "requirements-windows.txt"
             self.output_filename = f"app.exe"
+        elif target_platform == "linux":
+            self.requirements = "requirements.txt"
+            self.output_filename = "app.out"
         else:
             self.requirements = "requirements.txt"
-            self.output_filename = "app"
+            self.output_filename = "app.app"     
 
         self.venv_name = os.path.abspath(f"venv_{self.target_platform}")
         self.executable = sys.executable
@@ -25,7 +28,7 @@ class NuitkaCompiler:
         subprocess.run([self.executable, "-m", "venv", self.venv_name])
 
     def __change_executable_to_venv(self):
-        if self.target_platform == "windows":
+        if "win" in sys.platform:
             self.executable = os.path.join(self.venv_name, "Scripts", "python.exe")
         else:
             self.executable = os.path.join(self.venv_name, "bin", "python")
@@ -70,5 +73,5 @@ class NuitkaCompiler:
                 "--output-dir=dist",
                 self.main_script])
 if __name__ == "__main__":
-    c = NuitkaCompiler("windows", "launch.py", "logo.ico")
+    c = NuitkaCompiler("linux", "launch.py")
     c.compile()
