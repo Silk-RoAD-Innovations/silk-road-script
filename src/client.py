@@ -31,7 +31,7 @@ class ClientAPI:
 	def __save_image(self, response: requests.Response) -> None:
 		'''Creating image file'''
 		with open(os.path.join(self.image_folder, self.IMAGE_NAME), "wb") as file:
-				file.write(response.content)
+			file.write(response.content)
 
 	def download_image(self):
 		'''Downloads an image from server'''
