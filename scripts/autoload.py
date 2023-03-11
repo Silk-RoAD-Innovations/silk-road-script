@@ -1,19 +1,20 @@
 import os
 import sys
+
 if sys.platform == "win32":
-	import winreg
+    import winreg
 
 class AutoLoad:
     def __init__(self, app_name):
         self.app_name = app_name
 
-    def add_to_startup(self, file_path):
+    def add_to_startup(self, file_path, args=''):
         if sys.platform == 'win32':
             # Add to Windows registry
             key = winreg.HKEY_CURRENT_USER
             key_value = "Software\Microsoft\Windows\CurrentVersion\Run"
             with winreg.OpenKey(key, key_value, 0, winreg.KEY_SET_VALUE) as key:
-                winreg.SetValueEx(key, self.app_name, 0, winreg.REG_SZ, file_path)
+                winreg.SetValueEx(key, self.app_name, 0, winreg.REG_SZ, f'"{file_path}" {args}')
         elif sys.platform == 'darwin':
             # Add to macOS launch agents
             plist_path = os.path.expanduser(f'~/Library/LaunchAgents/com.{self.app_name}.plist')
@@ -28,6 +29,7 @@ class AutoLoad:
                     <key>ProgramArguments</key>
                     <array>
                         <string>{file_path}</string>
+                        <string>{args}</string>
                     </array>
                     <key>RunAtLoad</key>
                     <true/>
@@ -41,7 +43,7 @@ class AutoLoad:
             with open(desktop_file_path, 'w') as desktop_file:
                 desktop_file.write(f'''[Desktop Entry]
                 Type=Application
-                Exec={file_path}
+                Exec={file_path} {args}
                 Hidden=false
                 NoDisplay=false
                 X-GNOME-Autostart-enabled=true
