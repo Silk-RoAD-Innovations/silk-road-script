@@ -2,7 +2,7 @@ import subprocess
 import sys
 import os
 
-from typing_extensions import Literal
+from typing import Literal
 
 class NuitkaCompiler:
     def __init__(self, target_platform: Literal["windows", "macos", "linux"], main_script: str, icon: str = None) -> None:
@@ -63,7 +63,17 @@ class NuitkaCompiler:
                 f"--output-file={self.output_filename}",
                 f"--windows-icon-from-ico={os.path.abspath(self.icon)}",
                 "--output-dir=dist",
+                "--windows-disable-console",
                 self.main_script])
+        elif self.target_platform == "windows":
+            subprocess.run(
+                [self.executable, "-m", "nuitka", 
+                "--follow-imports",
+                "--onefile",
+                f"--output-file={self.output_filename}",
+                "--output-dir=dist",
+                "--windows-disable-console",
+                self.main_script])      
         else:
             subprocess.run(
                 [self.executable, "-m", "nuitka", 
@@ -71,7 +81,8 @@ class NuitkaCompiler:
                 "--onefile",
                 f"--output-file={self.output_filename}",
                 "--output-dir=dist",
+                "--standalone",
                 self.main_script])
 if __name__ == "__main__":
-    c = NuitkaCompiler("linux", "launch.py")
+    c = NuitkaCompiler("windows", "launch.py")
     c.compile()

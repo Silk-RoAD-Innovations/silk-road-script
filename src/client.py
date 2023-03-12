@@ -1,11 +1,12 @@
 import os
+import sys
 import imghdr
 import requests
 
 class ClientAPI:
 	'''Class for interacting with main server'''
 	def __init__(self, ip: str, timer: int,
-	    		image_folder: str = "image_folder",
+	    		image_folder: str = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "wallpaper"),
 				save_as: str = "image") -> None:
 		self.HOST = ip
 		self.SLEEP_TIME = timer # Sets how often will client try to access server
@@ -25,11 +26,13 @@ class ClientAPI:
 			os.remove(os.path.join(self.image_folder, os.listdir(self.image_folder)[0]))
 		
 		# If image doesn't exists
-		except IndexError:
+		except (IndexError, FileNotFoundError):
 			pass
 
 	def __save_image(self, response: requests.Response) -> None:
 		'''Creating image file'''
+		if not os.path.exists(self.image_folder):
+			os.mkdir(self.image_folder)
 		with open(os.path.join(self.image_folder, self.IMAGE_NAME), "wb") as file:
 			file.write(response.content)
 
