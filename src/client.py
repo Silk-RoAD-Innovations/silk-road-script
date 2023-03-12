@@ -49,3 +49,6 @@ class ClientAPI:
 		file_type = imghdr.what(None, response.content)
 		self.IMAGE_NAME = f"{self.save_as}.{file_type}"
 		self.__save_image(response)
+
+	def check_for_update(self):
+		pass
