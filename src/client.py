@@ -2,14 +2,16 @@ import os
 import sys
 import imghdr
 import requests
+from urllib.parse import urlparse
+
+from typing import Dict
 
 class ClientAPI:
 	'''Class for interacting with main server'''
-	def __init__(self, ip: str, timer: int,
+	def __init__(self, ip: str,
 	    		image_folder: str = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "wallpaper"),
 				save_as: str = "image") -> None:
 		self.HOST = ip
-		self.SLEEP_TIME = timer # Sets how often will client try to access server
 
 		self.image_folder = image_folder
 		self.save_as = save_as
@@ -50,5 +52,14 @@ class ClientAPI:
 		self.IMAGE_NAME = f"{self.save_as}.{file_type}"
 		self.__save_image(response)
 
-	def check_for_update(self):
-		pass
+	def check_for_updates(self) -> Dict:
+		parsed_ip = urlparse(self.HOST)
+		try:
+			if parsed_ip.port:
+				ip_address = parsed_ip.scheme + "://" + parsed_ip.hostname + ':' + str(parsed_ip.port)
+			else:
+				ip_address = parsed_ip.scheme + "://" + parsed_ip.hostname
+		except AttributeError:
+			ip_address = parsed_ip.scheme + "://" + parsed_ip.hostname
+		response = requests.get(f"{ip_address}/wallpaper/update").json()
+		return response
