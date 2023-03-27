@@ -53,13 +53,11 @@ class ClientAPI:
 		self.__save_image(response)
 
 	def check_for_updates(self) -> Dict:
-		parsed_ip = urlparse(self.HOST)
-		try:
-			if parsed_ip.port:
-				ip_address = parsed_ip.scheme + "://" + parsed_ip.hostname + ':' + str(parsed_ip.port)
-			else:
-				ip_address = parsed_ip.scheme + "://" + parsed_ip.hostname
-		except AttributeError:
-			ip_address = parsed_ip.scheme + "://" + parsed_ip.hostname
-		response = requests.get(f"{ip_address}/wallpaper/update").json()
+		parsed_url = urlparse(self.HOST)
+		protocol = parsed_url.scheme
+		domain_with_port = parsed_url.netloc
+
+		full_url = f"{protocol}://{domain_with_port}"
+
+		response = requests.get(f"{full_url}/wallpaper/update").json()
 		return response
