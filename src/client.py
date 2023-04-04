@@ -52,12 +52,14 @@ class ClientAPI:
 		self.IMAGE_NAME = f"{self.save_as}.{file_type}"
 		self.__save_image(response)
 
-	def check_for_updates(self) -> Dict:
+	def get_url(self):
 		parsed_url = urlparse(self.HOST)
 		protocol = parsed_url.scheme
 		domain_with_port = parsed_url.netloc
 
 		full_url = f"{protocol}://{domain_with_port}"
+		return full_url
 
-		response = requests.get(f"{full_url}/wallpaper/update").json()
+	def check_for_updates(self) -> Dict:
+		response = requests.get(f"{self.get_url()}/wallpaper/update").json()
 		return response
