@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s -  %(funcName)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
@@ -36,22 +36,23 @@ class Scheduler:
 		'''Function to call to ClientAPI every X seconds, and set downloaded image as wallpaper'''
 		gmt = timezone(timedelta(hours=6)) # GMT+6
 
-		logger.info("Starting image mainloop.")
+		logger.info("Starting image mainloop...")
 		while True:
 			now = datetime.now(gmt)
 			next_time = now.replace(minute=(now.minute // self.interval + 1) * self.interval, second=0, microsecond=0)
 			wait_time = (next_time - now).total_seconds()
 
+			logger.info("Deleting any previously downloaded images...")
 			self.api.delete_image()
 			try:
-				logger.info("Trying to download image.")
+				logger.info("Trying to download image...")
 				self.api.download_image()
 			except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError, requests.exceptions.JSONDecodeError):
 				logger.error(f"The json for images doesn't exist at {self.api.HOST}")
 			else:
 				logger.info("The image was successfully downloaded, setting it as a wallpaper.")
 				wallpaper.Wallpaper.set_wallpaper(os.path.abspath(os.path.join(self.api.image_folder, self.api.IMAGE_NAME)))
-			logger.info(f"Next check for image in: {wait_time} seconds")
+			logger.info(f"Next check for image in: {wait_time} seconds.")
 			time.sleep(wait_time)
 
 	def update_mainloop(self):
@@ -74,7 +75,7 @@ class Scheduler:
 			# Remove this file
 			os.remove(os.path.abspath(sys.argv[0]))
 
-		logger.info("Starting update mainloop.")
+		logger.info("Starting update mainloop...")
 		while True:
 			now = datetime.now()
 
@@ -87,16 +88,17 @@ class Scheduler:
 			try:
 				update_info = self.api.check_for_updates()
 
-			except requests.exceptions.JSONDecodeError:
+			except (requests.exceptions.ConnectTimeout, requests.exceptions.ConnectionError, requests.exceptions.JSONDecodeError):
 				logger.error(f"The json for updates doesn't exist at '{self.api.get_url()}/wallpaper/update', please check if your IP is correct.")
 
 			else:
 				if update_info["version"] > __version__:
-					logger.info("New update was found, installing.")
+					logger.info("New update was found, downloading...")
 					download_and_run(update_info["update"], f"wallpaper_core_{update_info['version']}.exe")
+				else:
+					logger.info("No updates were found.")
 
-
-			logger.info(f"Next check for update in: {seconds_until_midnight} seconds")
+			logger.info(f"Next check for update in: {seconds_until_midnight} seconds.")
 			time.sleep(seconds_until_midnight)
 
 def parse_args():
@@ -111,9 +113,9 @@ def parse_args():
 if __name__ == '__main__':
 	exe_path = os.path.abspath(sys.argv[0])
 	args = parse_args()
-	logger.info("Launching program.")
+	logger.info("Launching program...")
 
-	logger.info("Adding program to the autoload.")
+	logger.info("Adding program to the autoload...")
 	# a = autoload.AutoLoad("wallpaper_changer")
 	# a.add_to_startup(exe_path, f"{args.ip} {args.timer} --image_folder {args.image_folder} --save_as {args.save_as}")
 
